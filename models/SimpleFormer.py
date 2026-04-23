@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from layers.Embed import EmbeddingWrapper, PositionalEncoding
-from models.custom_transformer import TransformerBlock
-# from models.vanilla_transformer import TransformerEncoder, TransformerEncoderLayer
 
 
 class Model(nn.Module):
@@ -15,12 +13,7 @@ class Model(nn.Module):
         self.mask = self.cfg.mask if hasattr(self.cfg, 'mask') else None
         self.embedding = EmbeddingWrapper(embed_type=self.cfg.embed_type, in_features=self.cfg.enc_in, out_features=self.cfg.d_model, batch_first=True, dropout=self.cfg.dropout, kernel_size=self.cfg.embed_kernel_size)
         self.pe = PositionalEncoding(d_model=self.cfg.d_model, dropout=self.cfg.dropout, batch_first=True)
-
-        custom_implementation = self.cfg.custom_implementation if hasattr(self.cfg, 'custom_implementation') else False
-        if custom_implementation:
-            self.transformer = TransformerBlock(d_model=self.cfg.d_model, num_heads=self.cfg.n_heads, d_ff=self.cfg.d_ff, dropout=self.cfg.dropout)
-        else:
-            self.transformer = nn.TransformerEncoder(nn.TransformerEncoderLayer(d_model=self.cfg.d_model, nhead=self.cfg.n_heads, batch_first=True, dim_feedforward=self.cfg.d_ff, dropout=self.cfg.dropout, activation=self.cfg.activation), num_layers=self.cfg.e_layers)
+        self.transformer = nn.TransformerEncoder(nn.TransformerEncoderLayer(d_model=self.cfg.d_model, nhead=self.cfg.n_heads, batch_first=True, dim_feedforward=self.cfg.d_ff, dropout=self.cfg.dropout, activation=self.cfg.activation), num_layers=self.cfg.e_layers)
         self.projection = nn.Linear(self.cfg.d_model, self.cfg.c_out)
 
     @staticmethod
